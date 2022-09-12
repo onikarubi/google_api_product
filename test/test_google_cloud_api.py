@@ -1,7 +1,8 @@
 import glob
 import os
 import pytest
-from src.google_cloud_api import GoogleCloudApi
+from src.google_cloud_api import GoogleCloudApi, GoogleSheetsAPI
+from dotenv import load_dotenv
 
 class TestGoogleCloudApi(object):
 
@@ -28,8 +29,7 @@ class TestGoogleCloudApi(object):
     # envファイルが見つからない場合の例外テスト
     def test_find_env_file_raise(self):
         with pytest.raises(EnvironmentError):
-            g = GoogleCloudApi(['sample.com', 'sample02.com'])
-
+            GoogleCloudApi(['sample.com', 'sample02.com'], env_file_path='')
 
     """
     スコープが正しく設置されているかどうかの検証

@@ -30,16 +30,18 @@ class GoogleCloudApi(object):
         ディレクトリ直下に.envファイルを作成してください。
         デフォルト値 -> None
         """
-        self._env_file_path = env_file_path
-
-        if self._env_file_path is None:
-            self._env_file_path = os.path.abspath(glob.glob("**/.env")[0])
 
         try:
-            load_dotenv(self._env_file_path)
+            if env_file_path is None:
+                self._env_file_path = os.path.abspath(glob.glob("**/.env")[0])
+
+            else:
+                self._env_file_path = os.path.abspath(glob.glob(env_file_path)[0])
 
         except:
             raise EnvironmentError('.envファイルが見つかりません。ディレクトリ直下に.envファイルを作成してください。')
+
+        load_dotenv(self._env_file_path)
 
     @property
     def get_env_file_path(self) -> str:
