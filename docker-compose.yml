@@ -1,0 +1,35 @@
+version: '3'
+
+volumes:
+  data-base:
+
+services:
+  python:
+    build: .
+    ports:
+      - '3000:3000'
+
+    volumes:
+      - '.:/google_api_product'
+
+    environment:
+      - "ENV_PASSWORD=${DATABASE_PASSWORD}"
+
+    tty: true
+    stdin_open: true
+
+    depends_on:
+      - db
+    links:
+      - db
+
+  db:
+    image: mariadb
+    volumes:
+      - 'data-base:/var/lib/mysql'
+
+    environment:
+      - 'MARIADB_ROOT_PASSWORD=${DATABASE_PASSWORD}'
+
+    ports:
+      - '8080:8080'
