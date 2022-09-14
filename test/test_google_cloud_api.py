@@ -13,8 +13,8 @@ class TestGoogleCloudApi(object):
     """
     def test_get_env_file_path(self):
         g = GoogleCloudApi(['sample.com', 'sample02.com'])
-        path_exists_case1 = os.path.abspath('config/.env')
-        path_exists_case2 = os.path.abspath(glob.glob('**/.env')[0])
+        path_exists_case1 = os.path.abspath('.env')
+        path_exists_case2 = os.path.abspath(glob.glob('.env')[0])
         path_failure_case = os.path.abspath('env/config/.env')
 
         assert g.get_env_file_path == path_exists_case1

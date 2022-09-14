@@ -12,9 +12,6 @@ services:
     volumes:
       - '.:/google_api_product'
 
-    environment:
-      - "ENV_PASSWORD=${DATABASE_PASSWORD}"
-
     tty: true
     stdin_open: true
 
@@ -29,7 +26,8 @@ services:
       - 'data-base:/var/lib/mysql'
 
     environment:
-      - 'MARIADB_ROOT_PASSWORD=${DATABASE_PASSWORD}'
+      # 本番環境では環境変数から参照します。 ex.'MARIADB_ROOT_PASSWORD=${DATABASE_PASSWORD}'
+      - 'MYSQL_ROOT_PASSWORD=mariadb_password'
 
     ports:
       - '8080:8080'
