@@ -44,7 +44,7 @@ docker-compose exec python bash
 ```
 
 ```
-pytest test/test_google_cloud_api.py
+python -m pytest test/test_google_cloud_api.py
 ```
 
 ひとまず以上。
