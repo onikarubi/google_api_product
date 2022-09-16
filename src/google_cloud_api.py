@@ -33,7 +33,7 @@ class GoogleCloudApi(object):
 
         try:
             if env_file_path is None:
-                self._env_file_path = os.path.abspath(glob.glob("**/.env")[0])
+                self._env_file_path = os.path.abspath(glob.glob(".env")[0])
 
             else:
                 self._env_file_path = os.path.abspath(glob.glob(env_file_path)[0])
