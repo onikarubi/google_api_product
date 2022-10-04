@@ -1,46 +1,31 @@
+from ast import Dict
+from typing import List
+import openpyxl
+import pykakasi
 
-def push_list(lst=[]):
-    # 関数の引数にデフォルト値で設定した空の配列に対して、'追加'という文字を追加する
-    lst.append("追加")
+kakasi = pykakasi.kakasi()
+convert = kakasi.convert('吾輩は猫である。名前はまだ無い。')
+print(convert)
+result = ''.join([i['passport'] if i['passport'] != 'ha' else 'wa' for i in convert]).capitalize()
+list_result = list(result)
 
-    return lst
+for r in range(len(list_result)):
+    if not r == 0:
+        if list_result[r - 1] == '.':
+            list_result[r] = list_result[r].upper()
 
+result = ''.join(list_result)
 
-func1 = push_list()
-print(func1)  # 出力結果 -> ['追加']
+print(result)
 
-func2 = push_list()
-print(func2)  # 出力結果 -> ['追加', '追加']
+class ControlExcel(object):
+    def __init__(self, xlsx_path) -> None:
+        self.xlsx_path = xlsx_path
+        self._words: List[Dict[str, str]] = self.get_words
 
-
-"""
-インスタンス生成時にコンストラクタメソッドが2回呼び出されるため、
-インスタンス変数(lst)に'追加'という文字が2回格納される。
-"""
-
-
-class SampleClass(object):
-    def __init__(self, lst=[]):
-        self.lst = lst
-        self.lst.append('追加')
-
-
-sample_class1 = SampleClass()
-sample_class2 = SampleClass()
-
-print(sample_class1.lst)  # 出力結果 -> ['追加', '追加']
-print(sample_class2.lst)  # 出力結果 -> ['追加', '追加']
+    def get_words(self, str):
+        return kakasi.convert(str)
 
 
-def push_list2(lst=None):
-    if lst is None:
-        lst = []
-
-    lst.append('追加')
-    return lst
 
 
-func3 = push_list2()
-print(func3)  # 出力結果 -> ['追加']
-func4 = push_list2()
-print(func4)  # 出力結果 -> ['追加']

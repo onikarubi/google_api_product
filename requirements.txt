@@ -2,3 +2,6 @@ python-dotenv
 gspread
 pytest
 pydrive
+openpyxl
+pykakasi
+gspread-formatting
