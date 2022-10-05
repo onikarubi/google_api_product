@@ -6,9 +6,10 @@ from dotenv import load_dotenv
 from google.oauth2.service_account import Credentials
 from googleapiclient.http import HttpError
 from gspread import WorksheetNotFound, SpreadsheetNotFound
+from gspread.client import APIError
 
 
-class GoogleCloudApi(object):
+class _GoogleCloudApi(object):
     def __init__(
         self,
         scopes=None,
@@ -36,10 +37,12 @@ class GoogleCloudApi(object):
                 self._env_file_path = os.path.abspath(glob.glob(".env")[0])
 
             else:
-                self._env_file_path = os.path.abspath(glob.glob(env_file_path)[0])
+                self._env_file_path = os.path.abspath(
+                    glob.glob(env_file_path)[0])
 
         except:
-            raise EnvironmentError('.envファイルが見つかりません。ディレクトリ直下に.envファイルを作成してください。')
+            raise EnvironmentError(
+                '.envファイルが見つかりません。ディレクトリ直下に.envファイルを作成してください。')
 
         load_dotenv(self._env_file_path)
 
@@ -69,7 +72,6 @@ class GoogleCloudApi(object):
             print('既にインスタンス内でスコープが指定されています。')
             return
 
-
     """
     GoogleCloudApiの認証資格を取得する
 
@@ -79,8 +81,11 @@ class GoogleCloudApi(object):
 
     def get_credentials(self) -> Credentials:
         try:
-            service_account_key = os.environ.get(self._refer_path_name)
-            return Credentials.from_service_account_file(service_account_key)
+            file_path = os.environ.get(self._refer_path_name)
+            account_file = Credentials.from_service_account_file(
+                file_path)
+            credentials = account_file.with_scopes(scopes=self._scopes)
+            return credentials
 
         except HttpError as error:
             print(f'{error}: GoogleAPIの認証に失敗しました。')
@@ -96,7 +101,7 @@ GoogleSheetsAPIを操作
 """
 
 
-class GoogleSheetsAPI(GoogleCloudApi):
+class GoogleSheetsAPI(_GoogleCloudApi):
     def __init__(
         self,
         work_sheet_name: str,
@@ -106,37 +111,39 @@ class GoogleSheetsAPI(GoogleCloudApi):
     ):
         super().__init__(scopes, refer_path_name)
 
+        if len(self._scopes) == 0:
+            self._scopes = ['https://www.googleapis.com/auth/spreadsheets.readonly',
+                            'https://www.googleapis.com/auth/drive']
+
         """
         .envファイルからvariable_spread_keyに指定されたスプレッドキーの変数を参照.
         ※ デフォルトは'SPREAD_KEY'
         """
         self.__spread_key = os.environ.get(variable_spread_key)
-        self.__spread_sheet = self.__authorize_spread_sheet()
+        self.__spread_sheet = self._authorize_spread_sheet()
         self.__worksheet_name = work_sheet_name
 
-
-    """""
-    スプレッドシートの認証
-    """""
-
-    def __authorize_spread_sheet(self) -> gspread.Spreadsheet:
+    """"" スプレッドシートの認証 """""
+    def _authorize_spread_sheet(self) -> gspread.Spreadsheet:
         try:
             credentials = self.get_credentials()
             credential_auth = gspread.authorize(credentials=credentials)
+            sheet = credential_auth.open_by_key(self.__spread_key)
+            print('スプレッドシートの認証が完了しました。')
+            return sheet
 
-        except SpreadsheetNotFound as error:
+        except APIError as error:
             print('スプレッドシートの認証に失敗しました。')
             raise error
 
-        return credential_auth.open_by_key(self.__spread_key)
+        except SpreadsheetNotFound as error:
+            print('スプレッドシートが見つかりません。')
 
-    """""
-    ワークブックからワークシートを読み込む
-    """""
-
+    """"" ワークブックからワークシートを読み込む """""
     def read_worksheet(self) -> gspread.Worksheet:
         try:
-            worksheet = self.__spread_sheet.get_worksheet(self.__worksheet_name)
+            worksheet = self.__spread_sheet.get_worksheet(
+                self.__worksheet_name)
             print(f'{worksheet}の読み込みが完了しました。')
 
         except WorksheetNotFound as not_found_error:
@@ -151,7 +158,3 @@ class GoogleSheetsAPI(GoogleCloudApi):
         else:
             raise ValueError('ワークシート名が空です。')
 
-
-if __name__ == '__main__':
-    # メイン処理
-    pass
