@@ -104,7 +104,7 @@ GoogleSheetsAPIを操作
 class GoogleSheetsAPI(_GoogleCloudApi):
     def __init__(
         self,
-        work_sheet_name: str,
+        work_sheet_name: str = '',
         variable_spread_key: str = 'SPREAD_KEY',
         scopes=None,
         refer_path_name='SERVICE_ACCOUNT_KEY',
@@ -119,11 +119,12 @@ class GoogleSheetsAPI(_GoogleCloudApi):
         .envファイルからvariable_spread_keyに指定されたスプレッドキーの変数を参照.
         ※ デフォルトは'SPREAD_KEY'
         """
+        self._worksheet_name = work_sheet_name
         self.__spread_key = os.environ.get(variable_spread_key)
         self.__spread_sheet = self._authorize_spread_sheet()
-        self.__worksheet_name = work_sheet_name
 
     """"" スプレッドシートの認証 """""
+
     def _authorize_spread_sheet(self) -> gspread.Spreadsheet:
         try:
             credentials = self.get_credentials()
@@ -140,21 +141,37 @@ class GoogleSheetsAPI(_GoogleCloudApi):
             print('スプレッドシートが見つかりません。')
 
     """"" ワークブックからワークシートを読み込む """""
+
     def read_worksheet(self) -> gspread.Worksheet:
         try:
             worksheet = self.__spread_sheet.get_worksheet(
-                self.__worksheet_name)
+                self._worksheet_name)
             print(f'{worksheet}の読み込みが完了しました。')
 
         except WorksheetNotFound as not_found_error:
-            print(f'{self.__worksheet_name}のワークシートが見つかりませんでした。')
+            print(f'{self._worksheet_name}のワークシートが見つかりませんでした。')
             raise not_found_error
 
     @property
     def get_worksheet_name(self) -> gspread.Worksheet:
-        if self.__worksheet_name != '':
-            return self.__worksheet_name
+        return self._worksheet_name
+
+    @get_worksheet_name.setter
+    def set_work_sheet_name(self, name: str) -> None:
+        if self._worksheet_name == '':
+            self._worksheet_name = name
+            return
 
         else:
-            raise ValueError('ワークシート名が空です。')
+            raise ValueError('既に値が入力されています。')
 
+
+class SelfCareSheet(GoogleSheetsAPI):
+    def __init__(self, work_sheet_name: str = '', variable_spread_key: str = 'SPREAD_KEY', scopes=None, refer_path_name='SERVICE_ACCOUNT_KEY'):
+        super().__init__(work_sheet_name, variable_spread_key, scopes, refer_path_name)
+        """
+        work_sheet名が何も指定されていなかったら、
+        「'鬱タイプ'」を設定する。
+        """
+        if self._worksheet_name == '':
+            self.set_work_sheet_name = '鬱タイプ'
