@@ -172,7 +172,8 @@ class SelfCareSheet(GoogleSheetsAPI):
         work_sheet_name: str = '',
         cell_all_range: str = 'A4:AE67',
         label_title_cell_range: str = 'D4:AE4',
-        label_cell_range: str = 'D5:AD5',
+        label_cell_range: str = 'D5:AE5',
+        date_label_cell_range: str = 'A4:C5',
         variable_spread_key: str = 'SPREAD_KEY', scopes=None, refer_path_name='SERVICE_ACCOUNT_KEY'
     ):
         super().__init__(work_sheet_name, variable_spread_key, scopes, refer_path_name)
@@ -186,11 +187,15 @@ class SelfCareSheet(GoogleSheetsAPI):
         self._cell_all_range: str = cell_all_range
         self._label_title_cell_range = label_title_cell_range # ラベルの上にあるタイトルのセル範囲
         self._label_cell_range = label_cell_range # ラベルのセル範囲
-        self._category_label_titles: List[str] = [t for t in self.filtering_values(self._label_title_cell_range)]
-        self._category_labels: List[int] = [l for l in self.filtering_values(self._label_cell_range)]
+        self._date_cell_rage = date_label_cell_range # 日付
+
+        self._category_title_labels: List[str] = [t for t in self.filtering_values(self._label_title_cell_range)]
+        self._category_labels: List[str] = [l for l in self.filtering_values(self._label_cell_range)]
+        self._date_labels: List[str] = [d for d in self.filtering_values(self._date_cell_rage)]
 
         self._label_data = {
-            'label_titles': self._category_label_titles,
+            'date_labels': self._date_labels,
+            'label_titles': self._category_title_labels,
             'labels': self._category_labels
         }
 
@@ -199,7 +204,7 @@ class SelfCareSheet(GoogleSheetsAPI):
 
         for w in work_sheet_range:
             if not w.value == '':
-                yield w.value.replace('\n', '')
+                yield w.value.replace('\n', '').replace('\u3000', '')
 
             else:
                 continue
