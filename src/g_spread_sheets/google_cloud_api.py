@@ -1,8 +1,10 @@
+import datetime
 from email.generator import Generator
 import os
 import glob
 import gspread
-from typing import Dict, List
+import calendar
+from typing import List
 from dotenv import load_dotenv
 from google.oauth2.service_account import Credentials
 from googleapiclient.http import HttpError
@@ -174,6 +176,7 @@ class SelfCareSheet(GoogleSheetsAPI):
         label_title_cell_range: str = 'D4:AE4',
         label_cell_range: str = 'D5:AE5',
         date_label_cell_range: str = 'A4:C5',
+        calendar_label: str = 'A1',
         variable_spread_key: str = 'SPREAD_KEY', scopes=None, refer_path_name='SERVICE_ACCOUNT_KEY'
     ):
         super().__init__(work_sheet_name, variable_spread_key, scopes, refer_path_name)
@@ -182,23 +185,35 @@ class SelfCareSheet(GoogleSheetsAPI):
         if self._worksheet_name == '':
             self.set_work_sheet_name = '鬱タイプ'
 
-        self.work_sheet: gspread.Worksheet = self.read_worksheet(self._worksheet_name)
+        self.work_sheet: gspread.Worksheet = self.read_worksheet(
+            self._worksheet_name)
 
         self._cell_all_range: str = cell_all_range
-        self._label_title_cell_range = label_title_cell_range # ラベルの上にあるタイトルのセル範囲
-        self._label_cell_range = label_cell_range # ラベルのセル範囲
-        self._date_cell_rage = date_label_cell_range # 日付
+        self._label_title_cell_range = label_title_cell_range  # ラベルの上にあるタイトルのセル範囲
+        self._label_cell_range = label_cell_range  # ラベルのセル範囲
+        self._date_cell_rage = date_label_cell_range  # 日付
 
         self._category_title_labels: List[str] = [t for t in self.filtering_values(self._label_title_cell_range)]
         self._category_labels: List[str] = [l for l in self.filtering_values(self._label_cell_range)]
         self._date_labels: List[str] = [d for d in self.filtering_values(self._date_cell_rage)]
 
+        self._calendar_label_value = self.work_sheet.acell(
+            calendar_label).value
+
         self._label_data = {
             'date_labels': self._date_labels,
             'label_titles': self._category_title_labels,
-            'labels': self._category_labels
+            'labels': self._category_labels,
+            'month': self._calendar_label_value,
+            'first_month_day': self._date_type_conversion(self._calendar_label_value),
+            'month_last_day': self.get_month_last_day(self._calendar_label_value)
         }
 
+    """
+    引数に指定されたセルのラベルから値を抽出し、値を文字列で返す。
+    また、改行コードの'\n'といった特殊文字は空白に変換する。
+    ただし、セルの値が元から空白だった場合はスキップ。
+    """
     def filtering_values(self, cell_range: str = '') -> Generator(str):
         work_sheet_range = self.work_sheet.range(cell_range)
 
@@ -208,6 +223,19 @@ class SelfCareSheet(GoogleSheetsAPI):
 
             else:
                 continue
+
+    """ 月の値を引数に当て、yyyy/mm/dd形式で初月の年月日をs文字列で返す。 """
+
+    def _date_type_conversion(self, date_str: str) -> str:
+        date_str = date_str.replace('月', '')
+        date_int = int(date_str)
+        date_info = datetime.date(year=2022, month=date_int, day=1)
+        return str(date_info).replace('-', '/')
+
+    def get_month_last_day(self, date_str: str) -> datetime.datetime:
+        date_int = int(date_str.replace('月', ''))
+        # 日数だけ返す。
+        return calendar.monthrange(2022, date_int)[1]
 
     @property
     def get_all_cell_range(self) -> str:
@@ -229,6 +257,8 @@ class SelfCareSheet(GoogleSheetsAPI):
     @property
     def get_label_data(self): return self._label_data
 
+
 if __name__ == '__main__':
     s = SelfCareSheet()
-    print(s.get_label_data)
+    for k, v in s.get_label_data.items():
+        print(k, v)
