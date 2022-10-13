@@ -5,9 +5,18 @@ s = SelfCareSheet()
 
 class TestSelfCareSheet(object):
     def test_get_work_sheet_name(self):
-        s2 = SelfCareSheet(work_sheet_name='躁鬱タイプ')
+        s2 = SelfCareSheet(work_sheet_name='鬱タイプ(11月)')
         assert s.get_worksheet_name == '鬱タイプ'
-        assert s2.get_worksheet_name == '躁鬱タイプ'
+        assert not s2.get_worksheet_name == '鬱タイプ'
+
+        assert s2.get_worksheet_name == '鬱タイプ(11月)'
+
+    def test_get_work_sheet_exception(self):
+        # 正しい値が指定されていない"躁鬱タイプ"をテスト用に指定
+
+        with pytest.raises(TypeError):
+            SelfCareSheet(work_sheet_name='躁鬱タイプ')
+            SelfCareSheet(work_sheet_name='鬱タイプ (ValueException01)')
 
     def test_get_cell_all_range_and_raise_exception(self):
         """
