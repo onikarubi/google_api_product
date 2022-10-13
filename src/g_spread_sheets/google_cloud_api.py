@@ -176,7 +176,7 @@ class SelfCareSheet(GoogleSheetsAPI):
         label_title_cell_range: str = 'D4:AE4',
         label_cell_range: str = 'D5:AE5',
         date_label_cell_range: str = 'A4:C5',
-        calendar_label: str = 'A1',
+        calendar_label: str = 'A1:C2',
         variable_spread_key: str = 'SPREAD_KEY', scopes=None, refer_path_name='SERVICE_ACCOUNT_KEY'
     ):
         super().__init__(work_sheet_name, variable_spread_key, scopes, refer_path_name)
@@ -227,10 +227,17 @@ class SelfCareSheet(GoogleSheetsAPI):
     """ 月の値を引数に当て、yyyy/mm/dd形式で初月の年月日をs文字列で返す。 """
 
     def _date_type_conversion(self, date_str: str) -> str:
-        date_str = date_str.replace('月', '')
-        date_int = int(date_str)
-        date_info = datetime.date(year=2022, month=date_int, day=1)
-        return str(date_info).replace('-', '/')
+        try:
+            date_str = date_str.replace('月', '')
+            date_int = int(date_str)
+            date_info = datetime.date(year=2022, month=date_int, day=1)
+            return str(date_info).replace('-', '/')
+
+        except BaseException as error:
+            message = "取得した値が正しくありません。\nデータ値が1~12の数字が指定されていて、" \
+                "かつ月以外の余計な文字が入っていないか確認してください。"
+
+            raise print(f'{error} -> {message}')
 
     def get_month_last_day(self, date_str: str) -> datetime.datetime:
         date_int = int(date_str.replace('月', ''))
@@ -259,6 +266,6 @@ class SelfCareSheet(GoogleSheetsAPI):
 
 
 if __name__ == '__main__':
-    s = SelfCareSheet()
+    s = SelfCareSheet('鬱タイプ (ValueException01)')
     for k, v in s.get_label_data.items():
         print(k, v)

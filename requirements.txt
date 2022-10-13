@@ -5,3 +5,6 @@ pydrive
 openpyxl
 pykakasi
 gspread-formatting
+gspread-dataframe
+pandas
+psycopg2
