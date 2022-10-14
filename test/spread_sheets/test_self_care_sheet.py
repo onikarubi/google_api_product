@@ -1,6 +1,5 @@
-from src.g_spread_sheets.google_cloud_api import SelfCareSheet
 import pytest
-
+from src.gcp.services.google_cloud_api import SelfCareSheet
 s = SelfCareSheet()
 
 class TestSelfCareSheet(object):

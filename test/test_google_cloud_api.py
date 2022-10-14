@@ -3,8 +3,7 @@ import os
 import pytest
 from dotenv import load_dotenv
 
-from src.g_spread_sheets.google_cloud_api import _GoogleCloudApi
-
+from src.gcp.services.google_cloud_api import _GoogleCloudApi
 class TestGoogleCloudApi(object):
 
     """
