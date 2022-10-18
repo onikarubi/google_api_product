@@ -1,98 +1,12 @@
 import datetime
 from email.generator import Generator
 import os
-import glob
 import gspread
 import calendar
 from typing import List
-from dotenv import load_dotenv
-from google.oauth2.service_account import Credentials
-from googleapiclient.http import HttpError
 from gspread import WorksheetNotFound, SpreadsheetNotFound
 from gspread.client import APIError
-
-
-class _GoogleCloudApi(object):
-    def __init__(
-        self,
-        scopes=None,
-        refer_path_name='SERVICE_ACCOUNT_KEY',
-        env_file_path=None
-    ):
-
-        self._scopes = scopes
-
-        # .envファイルでサービスアカウントキーのパスが記載されている定数名
-        self._refer_path_name = refer_path_name
-
-        # 何も指定されていない場合は空の配列に設定
-        if self._scopes is None:
-            self._scopes = []
-
-        """
-        環境変数が記載された.envファイルから、変数の内容を読み込みます。
-        ディレクトリ直下に.envファイルを作成してください。
-        デフォルト値 -> None
-        """
-
-        try:
-            if env_file_path is None:
-                self._env_file_path = os.path.abspath(glob.glob(".env")[0])
-
-            else:
-                self._env_file_path = os.path.abspath(
-                    glob.glob(env_file_path)[0])
-
-        except:
-            raise EnvironmentError(
-                '.envファイルが見つかりません。ディレクトリ直下に.envファイルを作成してください。')
-
-        load_dotenv(self._env_file_path)
-
-    @property
-    def get_env_file_path(self) -> str:
-        return self._env_file_path
-
-    @get_env_file_path.setter
-    def set_env_file_path(self, path) -> None:
-        self._env_file_path = path
-
-    """""
-    scopesが引数に渡されていない場合は、空の配列として定義することでインスタンス生成時に
-    インスタンスメソッドから定義可能。
-    """""
-    @property
-    def get_google_api_scopes(self) -> List[str]:
-        return self._scopes
-
-    @get_google_api_scopes.setter
-    def set_google_api_scopes(self, scopes: List[str]) -> None:
-        if not len(self._scopes) > 0:
-            for scope in scopes:
-                self._scopes.append(scope)
-
-        else:
-            print('既にインスタンス内でスコープが指定されています。')
-            return
-
-    """
-    GoogleCloudApiの認証資格を取得する
-
-    - .envファイルの変数名から鍵ファイルを参照
-    - 認証が成功したら認証証明を発行
-    """
-
-    def get_credentials(self) -> Credentials:
-        try:
-            file_path = os.environ.get(self._refer_path_name)
-            account_file = Credentials.from_service_account_file(
-                file_path)
-            credentials = account_file.with_scopes(scopes=self._scopes)
-            return credentials
-
-        except HttpError as error:
-            print(f'{error}: GoogleAPIの認証に失敗しました。')
-
+from src.gcp.services.google_cloud_api import GoogleCloudApi
 
 """
 GoogleSheetsAPIを操作
@@ -104,7 +18,7 @@ GoogleSheetsAPIを操作
 """
 
 
-class GoogleSheetsAPI(_GoogleCloudApi):
+class GoogleSheetsAPI(GoogleCloudApi):
     def __init__(
         self,
         work_sheet_name: str = '',
@@ -193,9 +107,12 @@ class SelfCareSheet(GoogleSheetsAPI):
         self._label_cell_range = label_cell_range  # ラベルのセル範囲
         self._date_cell_rage = date_label_cell_range  # 日付
 
-        self._category_title_labels: List[str] = [t for t in self.filtering_values(self._label_title_cell_range)]
-        self._category_labels: List[str] = [l for l in self.filtering_values(self._label_cell_range)]
-        self._date_labels: List[str] = [d for d in self.filtering_values(self._date_cell_rage)]
+        self._category_title_labels: List[str] = [
+            t for t in self.filtering_values(self._label_title_cell_range)]
+        self._category_labels: List[str] = [
+            l for l in self.filtering_values(self._label_cell_range)]
+        self._date_labels: List[str] = [
+            d for d in self.filtering_values(self._date_cell_rage)]
 
         self._calendar_label_value = self.work_sheet.acell(
             calendar_label).value
@@ -214,6 +131,8 @@ class SelfCareSheet(GoogleSheetsAPI):
     また、改行コードの'\n'といった特殊文字は空白に変換する。
     ただし、セルの値が元から空白だった場合はスキップ。
     """
+
+
     def filtering_values(self, cell_range: str = '') -> Generator(str):
         work_sheet_range = self.work_sheet.range(cell_range)
 
@@ -264,8 +183,9 @@ class SelfCareSheet(GoogleSheetsAPI):
     @property
     def get_label_data(self): return self._label_data
 
-
 if __name__ == '__main__':
-    s = SelfCareSheet('鬱タイプ (ValueException01)')
-    for k, v in s.get_label_data.items():
-        print(k, v)
+    print('Success')
+    # s = SelfCareSheet('鬱タイプ (ValueException01)')
+    # for k, v in s.get_label_data.items():
+
+    #     print(k, v)

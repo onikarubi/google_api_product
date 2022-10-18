@@ -3,8 +3,7 @@ import os
 import pytest
 from dotenv import load_dotenv
 
-from src.g_spread_sheets.google_cloud_api import _GoogleCloudApi
-
+from src.gcp.services.google_cloud_api import GoogleCloudApi
 class TestGoogleCloudApi(object):
 
     """
@@ -13,7 +12,7 @@ class TestGoogleCloudApi(object):
     成功するケースと失敗するケースを検証
     """
     def test_get_env_file_path(self):
-        g = _GoogleCloudApi(['sample.com', 'sample02.com'])
+        g = GoogleCloudApi(['sample.com', 'sample02.com'])
         path_exists_case1 = os.path.abspath('.env')
         path_exists_case2 = os.path.abspath(glob.glob('.env')[0])
         path_failure_case = os.path.abspath('env/config/.env')
@@ -30,7 +29,7 @@ class TestGoogleCloudApi(object):
     # envファイルが見つからない場合の例外テスト
     def test_find_env_file_raise(self):
         with pytest.raises(EnvironmentError):
-            _GoogleCloudApi(['sample.com', 'sample02.com'], env_file_path='')
+            GoogleCloudApi(['sample.com', 'sample02.com'], env_file_path='')
 
     """
     スコープが正しく設置されているかどうかの検証
@@ -38,8 +37,8 @@ class TestGoogleCloudApi(object):
     """
 
     def test_get_google_api_scopes(self):
-        g1 = _GoogleCloudApi(scopes=["sample.com", "sample2.com"])
-        g2 = _GoogleCloudApi()
+        g1 = GoogleCloudApi(scopes=["sample.com", "sample2.com"])
+        g2 = GoogleCloudApi()
 
         # 初期状態の検証
         assert g1.get_google_api_scopes == ["sample.com", "sample2.com"]
