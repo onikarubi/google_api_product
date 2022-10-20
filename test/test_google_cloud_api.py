@@ -2,7 +2,6 @@ import glob
 import os
 import pytest
 from dotenv import load_dotenv
-
 from src.gcp.services.google_cloud_api import GoogleCloudApi
 class TestGoogleCloudApi(object):
 

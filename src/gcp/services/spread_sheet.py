@@ -6,7 +6,13 @@ import calendar
 from typing import List
 from gspread import WorksheetNotFound, SpreadsheetNotFound
 from gspread.client import APIError
-from src.gcp.services.google_cloud_api import GoogleCloudApi
+
+try:
+    from google_cloud_api import GoogleCloudApi
+
+# 検証テスト時
+except ModuleNotFoundError:
+    from src.gcp.services.google_cloud_api import GoogleCloudApi
 
 """
 GoogleSheetsAPIを操作
@@ -16,7 +22,6 @@ GoogleSheetsAPIを操作
 - 書き込み
 - データの取得
 """
-
 
 class GoogleSheetsAPI(GoogleCloudApi):
     def __init__(
@@ -132,7 +137,6 @@ class SelfCareSheet(GoogleSheetsAPI):
     ただし、セルの値が元から空白だった場合はスキップ。
     """
 
-
     def filtering_values(self, cell_range: str = '') -> Generator(str):
         work_sheet_range = self.work_sheet.range(cell_range)
 
@@ -183,9 +187,3 @@ class SelfCareSheet(GoogleSheetsAPI):
     @property
     def get_label_data(self): return self._label_data
 
-if __name__ == '__main__':
-    print('Success')
-    # s = SelfCareSheet('鬱タイプ (ValueException01)')
-    # for k, v in s.get_label_data.items():
-
-    #     print(k, v)
